@@ -1,9 +1,12 @@
 import time
 from ops import *
 from utils import *
-from tensorflow.contrib.data import prefetch_to_device, shuffle_and_repeat, map_and_batch
-from tensorflow.contrib.opt import MovingAverageOptimizer
-
+import tensorflow.compat.v1 as tf
+import tensorflow_addons as tfa
+# from tf.data.experimental import prefetch_to_device
+# from tensorflow.contrib.data import prefetch_to_device, shuffle_and_repeat, map_and_batch
+# from tensorflow.contrib.opt import MovingAverageOptimizer
+from moving_average_optimize import *
 
 class BigGAN_128(object):
 
@@ -92,7 +95,7 @@ class BigGAN_128(object):
     ##################################################################################
 
     def generator(self, z, is_training=True, reuse=False):
-        with tf.variable_scope("generator", reuse=reuse):
+        with tf.compat.v1.variable_scope("generator", reuse=reuse):
             # 6
             if self.z_dim == 128:
                 split_dim = 20
@@ -144,7 +147,7 @@ class BigGAN_128(object):
     ##################################################################################
 
     def discriminator(self, x, is_training=True, reuse=False):
-        with tf.variable_scope("discriminator", reuse=reuse):
+        with tf.compat.v1.variable_scope("discriminator", reuse=reuse):
             ch = self.ch
 
             x = resblock_down(x, channels=ch, use_bias=False, is_training=is_training, sn=self.sn, scope='resblock_down_1')
@@ -212,16 +215,16 @@ class BigGAN_128(object):
 
         gpu_device = '/gpu:0'
         inputs = inputs.\
-            apply(shuffle_and_repeat(self.dataset_num)).\
-            apply(map_and_batch(Image_Data_Class.image_processing, self.batch_size, num_parallel_batches=16, drop_remainder=True)).\
-            apply(prefetch_to_device(gpu_device, self.batch_size))
+            apply(tf.data.experimental.shuffle_and_repeat(self.dataset_num)).\
+            apply(tf.data.experimental.map_and_batch(Image_Data_Class.image_processing, self.batch_size, num_parallel_batches=16, drop_remainder=True)).\
+            apply(tf.data.experimental.prefetch_to_device(gpu_device, self.batch_size))
 
-        inputs_iterator = inputs.make_one_shot_iterator()
+        inputs_iterator = tf.compat.v1.data.make_one_shot_iterator(inputs)
 
         self.inputs = inputs_iterator.get_next()
 
         # noises
-        self.z = tf.truncated_normal(shape=[self.batch_size, 1, 1, self.z_dim], name='random_z')
+        self.z = tf.random.truncated_normal(shape=[self.batch_size, 1, 1, self.z_dim], name='random_z')
 
         """ Loss Function """
         # output of D for real images
@@ -244,19 +247,19 @@ class BigGAN_128(object):
 
         """ Training """
         # divide trainable variables into a group for D and a group for G
-        t_vars = tf.trainable_variables()
+        t_vars = tf.compat.v1.trainable_variables()
         d_vars = [var for var in t_vars if 'discriminator' in var.name]
         g_vars = [var for var in t_vars if 'generator' in var.name]
 
         # optimizers
-        with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
-            self.d_optim = tf.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2).minimize(self.d_loss, var_list=d_vars)
-
-            self.opt = MovingAverageOptimizer(tf.train.AdamOptimizer(self.g_learning_rate, beta1=self.beta1, beta2=self.beta2), average_decay=self.moving_decay)
-
+        with tf.control_dependencies(tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)):
+            self.d_optim = tf.compat.v1.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2).minimize(self.d_loss, var_list=d_vars)
+            import tensorflow as tf2
+            self.opt = MovingAverageOptimizer(tf.compat.v1.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2), average_decay=self.moving_decay)
+            # self.opt = tf.compat.v1.train.AdamOptimizer(self.g_learning_rate, beta1=self.beta1, beta2=self.beta2)
             self.g_optim = self.opt.minimize(self.g_loss, var_list=g_vars)
 
-        """" Testing """
+        """" Testlsing """
         # for test
         self.fake_images = self.generator(self.z, is_training=False, reuse=True)
 
@@ -273,7 +276,7 @@ class BigGAN_128(object):
         tf.global_variables_initializer().run()
 
         # saver to save model
-        self.saver = self.opt.swapping_saver()
+        # self.saver = self.opt.swapping_saver()
 
         # summary writer
         self.writer = tf.summary.FileWriter(self.log_dir + '/' + self.model_dir, self.sess.graph)
@@ -290,6 +293,7 @@ class BigGAN_128(object):
             start_batch_id = 0
             counter = 1
             print(" [!] Load failed...")
+        self.save(self.checkpoint_dir, counter)
 
         # loop for epoch
         start_time = time.time()
@@ -334,7 +338,10 @@ class BigGAN_128(object):
             # non-zero value is only for the first epoch after loading pre-trained model
             start_batch_id = 0
 
-            # save model
+            # # save model
+            # saver = tf.train.Saver()
+            # saver.save(sess)
+
             self.save(self.checkpoint_dir, counter)
 
             # show temporal results
@@ -359,7 +366,7 @@ class BigGAN_128(object):
         if not os.path.exists(checkpoint_dir):
             os.makedirs(checkpoint_dir)
 
-        self.saver.save(self.sess, os.path.join(checkpoint_dir, self.model_name + '.model'), global_step=step)
+        tf.train.Saver().save(self.sess, os.path.join(checkpoint_dir, self.model_name + '.model'), global_step=step)
 
     def load(self, checkpoint_dir):
         print(" [*] Reading checkpoints...")
@@ -368,7 +375,7 @@ class BigGAN_128(object):
         ckpt = tf.train.get_checkpoint_state(checkpoint_dir)
         if ckpt and ckpt.model_checkpoint_path:
             ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
-            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            tf.train.Saver().restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
             counter = int(ckpt_name.split('-')[-1])
             print(" [*] Success to read {}".format(ckpt_name))
             return True, counter

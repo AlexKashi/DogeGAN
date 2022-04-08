@@ -3,10 +3,10 @@ import numpy as np
 import os
 from glob import glob
 
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
+import tensorflow.compat.v1 as tf
+import tf_slim as slim
 from keras.datasets import cifar10, mnist
-
+import imageio
 class ImageData:
 
     def __init__(self, load_size, channels, custom_dataset):
@@ -19,6 +19,7 @@ class ImageData:
         if not self.custom_dataset :
             x_decode = filename
         else :
+            print(filename, "KEN")
             x = tf.read_file(filename)
             x_decode = tf.image.decode_jpeg(x, channels=self.channels)
 
@@ -87,7 +88,7 @@ def merge(images, size):
 
 def imsave(images, size, path):
     # image = np.squeeze(merge(images, size)) # 채널이 1인거 제거 ?
-    return scipy.misc.imsave(path, merge(images, size))
+    return imageio.imwrite(path, merge(images, size))
 
 
 def inverse_transform(images):
