@@ -4,8 +4,9 @@ import cv2
 from PIL import Image
 import matplotlib.pyplot as plt
 import os
-finalSize = (128,128)
 from tqdm import tqdm
+
+finalSize = (128,128)
 
 def loadImages():
 	fileNames = sorted(glob.glob("../../dataset/image/*.jpeg"))
