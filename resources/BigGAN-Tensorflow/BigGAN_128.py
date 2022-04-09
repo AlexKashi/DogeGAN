@@ -57,8 +57,10 @@ class BigGAN_128(object):
             self.data = load_cifar10()
 
         else:
+
             self.c_dim = 3
             self.data = load_data(dataset_name=self.dataset_name)
+
             self.custom_dataset = True
 
         self.dataset_num = len(self.data)
