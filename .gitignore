@@ -1,3 +1,4 @@
 .pyc
 resources/BigGAN-Tensorflow/logs/*
 resource/BigGAN-Tensorflow/checkpoint/*
+*/output/*
