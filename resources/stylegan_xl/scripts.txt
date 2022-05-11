@@ -1,0 +1,35 @@
+python gen_images.py --outdir=out --trunc=0.7 --seeds=10-15 --batch-sz 1 --network=training-runs/azuki/00006-stylegan3-r-azuki128-gpus1-batch12/network-snapshot.pkl
+
+
+python visualizer.py training-runs/azuki/00006-stylegan3-r-azuki128-gpus1-batch12/network-snapshot.pkl
+
+
+python train.py --outdir=./training-runs/azuki --cfg=stylegan3-r --data=./data/azuki128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10
+
+python train.py --outdir=./training-runs/KashiNFT --cfg=stylegan3-r --data=./data/KashiNFT128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10 --cond=1
+
+python train.py --outdir=./training-runs/azuki --cfg=stylegan2 --data=./data/azuki128.zip --gpus=1 --batch=24 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10
+
+python gen_images.py --outdir=out --trunc=0.7 --seeds=10-15 --batch-sz 1 --network=training-runs/azuki/00006-stylegan3-r-azuki128-gpus1-batch12/network-snapshot.pkl
+
+
+
+python dataset_tool.py --source=/home/alex/Harvard/Spring-2022/CV/DogeGAN/output/apes --dest=./data/apes128.zip --resolution=128x128 --transform=center-crop
+
+python dataset_tool.py --source=/home/alex/Harvard/Spring-2022/CV/DogeGAN/output/manga --dest=./data/manga128.zip --resolution=128x128 --transform=center-crop
+
+python dataset_tool.py --source=/home/alex/Harvard/Spring-2022/CV/DogeGAN/output/doodles-official --dest=./data/doodles-official128.zip --resolution=128x128 --transform=center-crop
+
+python train.py --outdir=./training-runs/manga --cfg=stylegan3-r --data=./data/manga128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10 --cond=1
+
+
+python train.py --outdir=./training-runs/occ --cfg=stylegan3-r --data=./data/occ128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 
+
+python train.py --outdir=./training-runs/doodles-official/ --cfg=stylegan3-r --data=./data/doodles-official128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10
+
+
+python dataset_tool.py --source=/home/alex/Harvard/Spring-2022/CV/DogeGAN/output/boredapeyachtclub --dest=./data/boredapeyachtclub128.zip --resolution=128x128 --transform=center-crop
+python train.py --outdir=./training-runs/boredapeyachtclub/ --cfg=stylegan3-r --data=./data/boredapeyachtclub128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10
+
+
+python train.py --outdir=./training-runs/cryptopunks/ --cfg=stylegan3-r --data=./data/cryptopunks128.zip --gpus=1 --batch=12 --mirror=0 --snap 10 --kimg 10000 --syn_layers 10

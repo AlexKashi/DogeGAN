@@ -257,7 +257,8 @@ class BigGAN_128(object):
         with tf.control_dependencies(tf.compat.v1.get_collection(tf.GraphKeys.UPDATE_OPS)):
             self.d_optim = tf.compat.v1.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2).minimize(self.d_loss, var_list=d_vars)
             import tensorflow as tf2
-            self.opt = MovingAverageOptimizer(tf.compat.v1.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2), average_decay=self.moving_decay)
+            #self.opt = MovingAverageOptimizer(tf.compat.v1.train.AdamOptimizer(self.d_learning_rate, beta1=self.beta1, beta2=self.beta2), average_decay=self.moving_decay)
+            self.opt = MovingAverageOptimizer(tf.compat.v1.train.AdamOptimizer(self.g_learning_rate, beta1=self.beta1, beta2=self.beta2), average_decay=self.moving_decay)
             # self.opt = tf.compat.v1.train.AdamOptimizer(self.g_learning_rate, beta1=self.beta1, beta2=self.beta2)
             self.g_optim = self.opt.minimize(self.g_loss, var_list=g_vars)
 

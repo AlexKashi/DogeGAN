@@ -194,5 +194,3 @@ def _conv2d_gradfix(transpose, weight_shape, stride, padding, output_padding, di
 
     _conv2d_gradfix_cache[key] = Conv2d
     return Conv2d
-
-#----------------------------------------------------------------------------

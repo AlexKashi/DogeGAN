@@ -268,8 +268,9 @@ class Renderer:
         for idx, seed in enumerate(all_seeds):
             rnd = np.random.RandomState(seed)
             all_zs[idx] = rnd.randn(G.z_dim)
-            cls = rnd.randint(G.c_dim)
+            cls = 0
             if G.c_dim > 0:
+                cls = rnd.randint(G.c_dim)
                 all_cs[idx, cls] = 1
 
         # Run mapping network.

@@ -9,11 +9,11 @@ def parse_args():
     desc = "Tensorflow implementation of BigGAN"
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('--phase', type=str, default='train', help='train or test ?')
-    parser.add_argument('--dataset', type=str, default='preppedData', help='[mnist / cifar10 / custom_dataset]')
+    parser.add_argument('--dataset', type=str, default='prepped_cryptopunks', help='[mnist / cifar10 / custom_dataset]')
 
-    parser.add_argument('--epoch', type=int, default=500, help='The number of epochs to run')
-    parser.add_argument('--iteration', type=int, default=100, help='The number of training iterations')
-    parser.add_argument('--batch_size', type=int, default=16, help='The size of batch per gpu')
+    parser.add_argument('--epoch', type=int, default=50, help='The number of epochs to run')
+    parser.add_argument('--iteration', type=int, default=10000, help='The number of training iterations')
+    parser.add_argument('--batch_size', type=int, default=24, help='The size of batch per gpu')
     parser.add_argument('--ch', type=int, default=96, help='base channel number per layer')
 
     # SAGAN
@@ -24,12 +24,12 @@ def parse_args():
     parser.add_argument('--print_freq', type=int, default=1000, help='The number of image_print_freqy')
     parser.add_argument('--save_freq', type=int, default=1000, help='The number of ckpt_save_freq')
 
-    parser.add_argument('--g_lr', type=float, default=0.00005, help='learning rate for generator')
+    parser.add_argument('--g_lr', type=float, default=0.00001, help='learning rate for generator')
     parser.add_argument('--d_lr', type=float, default=0.0002, help='learning rate for discriminator')
 
     # if lower batch size
-    # g_lr = 0.0001
-    # d_lr = 0.0004
+    g_lr = 0.0001
+    d_lr = 0.0004
 
     # if larger batch size
     # g_lr = 0.00005
@@ -60,7 +60,6 @@ def parse_args():
                         help='Directory name to save training logs')
     parser.add_argument('--sample_dir', type=str, default='samples',
                         help='Directory name to save the samples on training')
-
     return check_args(parser.parse_args())
 
 """checking arguments"""
